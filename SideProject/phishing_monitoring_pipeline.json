@@ -1,0 +1,246 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "45a31d00-4ff9-42c6-98ca-95d378a4b74a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "curlImport": "",
+        "httpVariantWarning": "",
+        "method": "GET",
+        "url": "https://www.virustotal.com/api/v3/intelligence/search",
+        "": "",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "virusTotalApi",
+        "provideSslCertificates": false,
+        "sendQuery": true,
+        "specifyQuery": "keypair",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "entity:url and engines:phishing and p:3+ and fs:2d+"
+            }
+          ]
+        },
+        "sendHeaders": false,
+        "sendBody": false,
+        "options": {},
+        "infoMessage": ""
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "0923ae28-cec2-4187-9485-ad5c31e7dead",
+      "name": "VirusTotal HTTP Request",
+      "extendsCredential": "virusTotalApi",
+      "credentials": {
+        "virusTotalApi": {
+          "id": "HPbo7xqxL6YjGl5n",
+          "name": "VirusTotal account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nreturn _input.first().json.data"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "8bad7538-005e-4a99-8104-aa0803004fd9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.attributes.last_final_url }}",
+        "additionalFields": {
+          "visibility": "public"
+        }
+      },
+      "type": "n8n-nodes-base.urlScanIo",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ],
+      "id": "85e2b6e7-6fa0-4dc2-8d27-08de69bd1892",
+      "name": "urlscan.io",
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "nWISVIFmT2ReYxmL",
+          "name": "urlscan.io account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        0
+      ],
+      "id": "678f6492-9a23-4c2f-9b1b-05b4543eb9f8",
+      "name": "Wait",
+      "webhookId": "fecab07f-1c05-4fd4-b762-6aec308b362c"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "scanId": "={{ $json.scanId }}"
+      },
+      "type": "n8n-nodes-base.urlScanIo",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "025d41e0-4e53-4e79-a071-0f9e840b238f",
+      "name": "urlscan.io1",
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "nWISVIFmT2ReYxmL",
+          "name": "urlscan.io account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C08U5CX0P42",
+          "mode": "list",
+          "cachedResultName": "ai"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"image\",\n\t\t\t\"image_url\": \"{{ $json.task.screenshotURL }}\",\n\t\t\t\"alt_text\": \"Phishing Website\"\n\t\t}\n\t]\n}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "7ef0caf2-2e7f-4909-ae8d-7307fad7a3e8",
+      "name": "Slack",
+      "webhookId": "51fe53e2-7e2d-4424-8c1c-2063f3f88cba",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "YoBtbJGkqFCNmqKa",
+          "name": "Slack account 3"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "VirusTotal HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VirusTotal HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "urlscan.io",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "urlscan.io": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "urlscan.io1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "urlscan.io1": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "604f81cd-f4b4-4e4a-a4a0-eb457cd28a15",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f4ca4191efaed8030f4368f14730dd3ba9b00624821030aa296434d381bafe7"
+  },
+  "id": "qvvb6IgOijRnb0Yt",
+  "tags": []
+}
