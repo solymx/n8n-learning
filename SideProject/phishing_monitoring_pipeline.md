@@ -26,3 +26,53 @@
 - mode: Run once for all items
 - language: python
 - python code below:
+```
+return _input.first().json.data
+```
+
+# 第四個 node
+
+`urlscan.io -> perform a scan`
+- Credential: 放自己的 api key
+- Resource: Scan
+- Operation: Perform
+- URL: 這個是直接拉左邊的，選： `{{ $json.attributes.last_final_url }}`  (選 code 裡面找 last_final_url)
+- Additional Fields -> Visibility: Public
+- 切換上面的 Paramaters -> Docs ---> On Error: Continue
+
+點測試看一下，可以選 table 欄位比較好觀察
+
+# 第五個 node
+
+`flow -> wait`
+- Resume: After Time Interval
+- Wait Amount: 30
+- Wait Unit: Seconds
+
+點一下測試跑看看
+
+# 第六個 node
+
+`urlscan -> get a scan`
+- Scan ID: 拉左邊的過來 : `{{ $json.scanId }}`  (來源：wait)
+- 出問題就把最上面的 parameters -> settings ，裡面 on error 改為 continue
+
+# 第七個 node
+
+`slack -> send a message`
+- Message Type: Blocks
+- Blocks: 點選範本(Slack's Block Kit Builder -> Image > no title , 複製改為底下)
+```
+{
+	"blocks": [
+		{
+			"type": "image",
+			"image_url": "{{ $json.task.screenshotURL }}",
+			"alt_text": "Phishing Website"
+		}
+	]
+}
+```
+
+記得把最上面 Parameters 切到 Settings, On Error: `Continue`
+
